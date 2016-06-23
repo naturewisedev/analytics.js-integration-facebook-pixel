@@ -15,6 +15,7 @@ describe('Facebook Pixel', function() {
       standardEvent: 'standard'
     },
     pixelId: '123123123',
+    pixelIds: ['234234234'],
     agent: 'test'
   };
 
