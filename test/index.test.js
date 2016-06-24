@@ -49,8 +49,7 @@ describe('Facebook Pixel', function() {
         analytics.called(facebookPixel.load);
       });
 
-      it('should set the correct agent and version', function() {
-        analytics.equal(window.fbq.agent, 'test');
+      it('should set the correct version', function() {
         analytics.equal(window.fbq.version, '2.0');
       });
 
@@ -164,13 +163,13 @@ describe('Facebook Pixel', function() {
       });
 
       describe('segment ecommerce => FB product audiences', function() {
-        it('Viewed Product Category', function() {
-          analytics.track('Viewed Product Category', { category: 'Games' });
-          analytics.called(window.fbq, 'track', 'ViewContent', {
-            content_ids: ['Games'],
-            content_type: 'product_group'
-          });
-        });
+        // it('Viewed Product Category', function() {
+        //   analytics.track('Viewed Product Category', { category: 'Games' });
+        //   analytics.called(window.fbq, 'track', 'ViewContent', {
+        //     content_ids: ['Games'],
+        //     content_type: 'product_group'
+        //   });
+        // });
 
         it('Viewed Product', function() {
           analytics.track('Viewed Product', {
@@ -185,6 +184,27 @@ describe('Facebook Pixel', function() {
           analytics.called(window.fbq, 'track', 'ViewContent', {
             content_ids: ['507f1f77bcf86cd799439011'],
             content_type: 'product',
+            content_name: 'my product',
+            content_category: 'cat 1',
+            currency: 'USD',
+            value: '24.75'
+          });
+        });
+
+        it('Viewed Product with productId', function() {
+          analytics.track('Viewed Product', {
+            id: '507f1f77bcf86cd799439011',
+            productId: '123456789',
+            currency: 'USD',
+            quantity: 1,
+            price: 24.75,
+            name: 'my product',
+            category: 'cat 1',
+            sku: 'p-298'
+          });
+          analytics.called(window.fbq, 'track', 'ViewContent', {
+            content_ids: ['123456789'],
+            content_type: 'product_group',
             content_name: 'my product',
             content_category: 'cat 1',
             currency: 'USD',
@@ -208,15 +228,16 @@ describe('Facebook Pixel', function() {
             content_name: 'my product',
             content_category: 'cat 1',
             currency: 'USD',
-            value: '24.75'
+            value: '24.75',
+            num_items: 1
           });
         });
 
         it('Started Order', function() {
           analytics.track('Started Order', {
             products: [
-              { id: '507f1f77bcf86cd799439011' },
-              { id: '505bd76785ebb509fc183733' }
+              { id: '507f1f77bcf86cd799439011', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', quantity: 1 }
             ],
             currency: 'USD',
             revenue: 0.50
@@ -230,11 +251,47 @@ describe('Facebook Pixel', function() {
           });
         });
 
+        it('Started Order with productId', function() {
+          analytics.track('Started Order', {
+            products: [
+              { id: '507f1f77bcf86cd799439011', productId: '123456789', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', productId: '234567890', quantity: 1 }
+            ],
+            currency: 'USD',
+            revenue: 0.50
+          });
+          analytics.called(window.fbq, 'track', 'InitiateCheckout', {
+            content_ids: ['123456789', '234567890'],
+            content_type: 'product_group',
+            currency: 'USD',
+            value: '0.50',
+            num_items: 2
+          });
+        });
+
+        it('Started Order with same productId', function() {
+          analytics.track('Started Order', {
+            products: [
+              { id: '507f1f77bcf86cd799439011', productId: '123456789', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', productId: '123456789', quantity: 1 }
+            ],
+            currency: 'USD',
+            revenue: 0.50
+          });
+          analytics.called(window.fbq, 'track', 'InitiateCheckout', {
+            content_ids: ['123456789'],
+            content_type: 'product_group',
+            currency: 'USD',
+            value: '0.50',
+            num_items: 2
+          });
+        });
+
         it('Completing an Order', function() {
           analytics.track('Completed Order', {
             products: [
-              { id: '507f1f77bcf86cd799439011' },
-              { id: '505bd76785ebb509fc183733' }
+              { id: '507f1f77bcf86cd799439011', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', quantity: 1 }
             ],
             currency: 'USD',
             total: 0.50
@@ -248,12 +305,48 @@ describe('Facebook Pixel', function() {
           });
         });
 
+        it('Completing an Order with productId', function() {
+          analytics.track('Completed Order', {
+            products: [
+              { id: '507f1f77bcf86cd799439011', productId: '123456789', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', productId: '234567890', quantity: 1 }
+            ],
+            currency: 'USD',
+            total: 0.50
+          });
+          analytics.called(window.fbq, 'track', 'Purchase', {
+            content_ids: ['123456789', '234567890'],
+            content_type: 'product_group',
+            currency: 'USD',
+            value: '0.50',
+            num_items: 2
+          });
+        });
+
+        it('Completing an Order with same productId', function() {
+          analytics.track('Completed Order', {
+            products: [
+              { id: '507f1f77bcf86cd799439011', productId: '123456789', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', productId: '123456789', quantity: 1 }
+            ],
+            currency: 'USD',
+            total: 0.50
+          });
+          analytics.called(window.fbq, 'track', 'Purchase', {
+            content_ids: ['123456789'],
+            content_type: 'product_group',
+            currency: 'USD',
+            value: '0.50',
+            num_items: 2
+          });
+        });
+
         it('Should send both pixel and standard event if mapped', function() {
           facebookPixel.options.legacyEvents = { 'Completed Order': '123456' };
           analytics.track('Completed Order', {
             products: [
-              { id: '507f1f77bcf86cd799439011' },
-              { id: '505bd76785ebb509fc183733' }
+              { id: '507f1f77bcf86cd799439011', quantity: 1 },
+              { id: '505bd76785ebb509fc183733', quantity: 1 }
             ],
             currency: 'USD',
             total: 0.50
