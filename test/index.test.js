@@ -49,8 +49,7 @@ describe('Facebook Pixel', function() {
         analytics.called(facebookPixel.load);
       });
 
-      it('should set the correct agent and version', function() {
-        analytics.equal(window.fbq.agent, 'test');
+      it('should set the correct version', function() {
         analytics.equal(window.fbq.version, '2.0');
       });
 
